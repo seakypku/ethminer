@@ -49,7 +49,8 @@ enum class MinerType
 {
 	Mixed,
 	CL,
-	CUDA
+	CUDA,
+	CPU
 };
 
 enum class HwMonitorInfoType

@@ -59,7 +59,8 @@ cmake_policy(SET CMP0054 NEW)
 
 ######################################################################################################
 
-option(ETHASHCL "Build with OpenCL mining" ON)
+option(ETHASHCL "Build with OpenCL mining" OFF)
+option(ETHASHCPU "Build with CPU mining" ON)
 option(ETHASHCUDA "Build with CUDA mining" OFF)
 option(ETHDBUS "Build with D-Bus support" OFF)
 option(APICORE "Build with API Server support" ON)
@@ -77,6 +78,9 @@ function(configureProject)
 	endif()
 	if (APICORE)
 		add_definitions(-DAPI_CORE)
+	endif()
+	if (ETHASHCPU)
+		add_definitions(-DETH_ETHASHCPU)
 	endif()
 endfunction()
 

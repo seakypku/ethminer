@@ -587,6 +587,10 @@ public:
 		{
 			m_minerType = MinerType::CUDA;
 		}
+		else if (arg == "-C" || arg == "--cpu")
+		{
+			m_minerType = MinerType::CPU;
+		}
 		else if (arg == "-X" || arg == "--cuda-opencl")
 		{
 			m_minerType = MinerType::Mixed;
@@ -667,6 +671,10 @@ public:
 #if ETH_ETHASHCUDA
 			if (m_minerType == MinerType::CUDA || m_minerType == MinerType::Mixed)
 				CUDAMiner::listDevices();
+#endif
+#if ETH_ETHASHCPU
+			if (m_minerType == MinerType::CPU )
+				CPUMiner::listDevices();
 #endif
 			exit(0);
 		}
@@ -853,6 +861,11 @@ private:
 			&CUDAMiner::instances, [](FarmFace& _farm, unsigned _index){ return new CUDAMiner(_farm, _index); }
 		};
 #endif
+#if ETH_ETHASHCPU
+		sealers["cpu"] = Farm::SealerDescriptor{
+			&CPUMiner::instances, [](FarmFace& _farm, unsigned _index){ return new CPUMiner(_farm, _index); }
+		};
+#endif
 		f.setSealers(sealers);
 		f.onSolutionFound([&](Solution) { return false; });
 
@@ -866,6 +879,8 @@ private:
 			f.start("opencl", false);
 		else if (_m == MinerType::CUDA)
 			f.start("cuda", false);
+		else if (_m == MinerType::CPU)
+			f.start("cpu", false);
 
 		WorkPackage current = WorkPackage(genesis);
 		
@@ -916,6 +931,9 @@ private:
 #endif
 #if ETH_ETHASHCUDA
 		sealers["cuda"] = Farm::SealerDescriptor{&CUDAMiner::instances, [](FarmFace& _farm, unsigned _index){ return new CUDAMiner(_farm, _index); }};
+#endif
+#if ETH_ETHASHCPU
+		sealers["cpu"] = Farm::SealerDescriptor{&CPUMiner::instances, [](FarmFace& _farm, unsigned _index){ return new CPUMiner(_farm, _index); }};
 #endif
 
 		PoolClient *client = nullptr;

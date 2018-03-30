@@ -35,6 +35,8 @@ PoolManager::PoolManager(PoolClient * client, Farm &farm, MinerType const & mine
 				m_farm.start("opencl", false);
 			else if (m_minerType == MinerType::CUDA)
 				m_farm.start("cuda", false);
+			else if (m_minerType == MinerType::CPU)
+				m_farm.start("cpu", false);
 			else if (m_minerType == MinerType::Mixed) {
 				m_farm.start("cuda", false);
 				m_farm.start("opencl", true);
@@ -109,6 +111,8 @@ PoolManager::PoolManager(PoolClient * client, Farm &farm, MinerType const & mine
 			m_farm.start("opencl", false);
 		else if (m_minerType == MinerType::CUDA)
 			m_farm.start("cuda", false);
+		else if (m_minerType == MinerType::CPU)
+			m_farm.start("cpu", false);
 		else if (m_minerType == MinerType::Mixed) {
 			m_farm.start("cuda", false);
 			m_farm.start("opencl", true);
