@@ -467,6 +467,19 @@ public:
 		else if (arg == "--list-devices")
 			m_shouldListDevices = true;
 #endif
+
+#if ETH_ETHASHCPU
+		else if ( arg == "--cpu-start-nonce" && i + 1 < argc)
+			try
+			{
+				m_cpuStartNonce = stol(argv[++i]);
+			}
+			catch (...)
+			{
+				cerr << "Bad " << arg << " option: " << argv[i] << endl;
+				BOOST_THROW_EXCEPTION(BadArgument());
+			}
+#endif
 #if ETH_ETHASHCUDA
 		else if ( arg == "--cuda-grid-size" && i + 1 < argc)
 			try
@@ -672,10 +685,6 @@ public:
 			if (m_minerType == MinerType::CUDA || m_minerType == MinerType::Mixed)
 				CUDAMiner::listDevices();
 #endif
-#if ETH_ETHASHCPU
-			if (m_minerType == MinerType::CPU )
-				CPUMiner::listDevices();
-#endif
 			exit(0);
 		}
 
@@ -711,6 +720,10 @@ public:
 			cerr << "Selected GPU mining without having compiled with -DETHASHCL=1" << endl;
 			exit(1);
 #endif
+		}
+		if (m_minerType == MinerType::CPU)
+		{
+			CPUMiner::setStartNonce(m_cpuStartNonce);
 		}
 		if (m_minerType == MinerType::CUDA || m_minerType == MinerType::Mixed)
 		{
@@ -1030,6 +1043,7 @@ private:
 	bool m_cudaNoEval = false;
 	unsigned m_parallelHash    = 4;
 #endif
+	uint64_t m_cpuStartNonce = 0;
 	unsigned m_dagLoadMode = 0; // parallel
 	unsigned m_dagCreateDevice = 0;
 	bool m_exit = false;
