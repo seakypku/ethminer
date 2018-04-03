@@ -36,13 +36,13 @@ class CPUMiner: public Miner
 public:
 	CPUMiner(FarmFace& _farm, unsigned _index);
 	~CPUMiner() override;
-	static void setStartNonce(uint64_t _startNonce)
-	{
-		m_start_manu_nonce = _startNonce;
-	}
 	static unsigned instances()
 	{
 		return s_numInstances > 0 ? s_numInstances : 1;
+	}
+	static void setStartNonce(uint64_t _startNonce)
+	{
+		m_start_manu_nonce = _startNonce;
 	}
 	void search(
 		uint8_t const* header,
@@ -62,12 +62,12 @@ private:
 
 	bool init(const h256& seed);
 
-	hash32_t m_current_header;
+	uint8_t m_current_header;
 	uint64_t m_current_target;
 	uint64_t m_current_nonce;
 	uint64_t m_starting_nonce;
 	uint64_t m_current_index;
-
+    static unsigned int s_numInstances;
 	static uint64_t m_start_manu_nonce;
 
 };

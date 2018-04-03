@@ -24,8 +24,9 @@ using namespace std;
 using namespace dev;
 using namespace eth;
 
-unsigned CPUMiner::s_numInstances = 0;
 
+unsigned CPUMiner::s_numInstances = 0;
+uint64_t CPUMiner::m_start_manu_nonce = 0;
 struct CPUChannel: public LogChannel
 {
 	static const char* name() { return EthOrange " cpu"; }
@@ -44,8 +45,7 @@ struct CPUSwitchChannel: public LogChannel
 #define cpuswitchlog clog(CPUSwitchChannel)
 
 CPUMiner::CPUMiner(FarmFace& _farm, unsigned _index) :
-	Miner("cpu-", _farm, _index),
-	m_light(getNumDevices()) {}
+	Miner("cpu-", _farm, _index) {}
 
 CPUMiner::~CPUMiner()
 {
@@ -106,7 +106,7 @@ void CPUMiner::workLoop()
 		}
 
 	}
-	catch (cpu_runtime_error const& _e)
+	catch (runtime_error const& _e)
 	{
 		cwarn << "Fatal GPU error: " << _e.what();
 		cwarn << "Terminating.";
@@ -126,7 +126,6 @@ void CPUMiner::kick_miner()
 }
 
 
-bool CPUMiner::s_noeval = false;
 
 
 void CPUMiner::search(
@@ -137,40 +136,33 @@ void CPUMiner::search(
 	const dev::eth::WorkPackage& w)
 {
 	bool initialize = false;
-	if (memcmp(&m_current_header, header, sizeof(hash32_t)))
+	if (memcmp(&m_current_header, header, sizeof(uint8_t)))
 	{
-		m_current_header = *reinterpret_cast<hash32_t const *>(header);
-		set_header(m_current_header);
+		m_current_header = *reinterpret_cast<uint8_t const *>(header);
 		initialize = true;
 	}
 	if (m_current_target != target)
 	{
 		m_current_target = target;
-		set_target(m_current_target);
 		initialize = true;
 	}
 	if (initialize)
 	{
-		m_current_nonce = get_start_nonce();
+		m_current_nonce = m_start_manu_nonce;
 	}
 	while (true)
 	{
-		m_current_nonce ++;
+        cwarn << " Current Nonce : " << m_current_nonce ;
 		Result r = EthashAux::eval(w.seed, w.header, m_current_nonce);
 		if (r.value < w.boundary)
-			farm.submitProof(Solution{nonces[i], r.mixHash, w, m_new_work});
+			farm.submitProof(Solution{m_current_nonce, r.mixHash, w, m_new_work});
 		else
 		{
 			farm.failedSolution();
 			cwarn << "CPU gave incorrect result!";
 		}
+		m_current_nonce ++;
 
-		if (m_new_work.compare_exchange_strong(t, false)) {
-			cpuswitchlog << "Switch time "
-				<< std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - workSwitchStart).count()
-				<< "ms.";
-			break;
-		}
 		if (shouldStop())
 		{
 			m_new_work.store(false, std::memory_order_relaxed);

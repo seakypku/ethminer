@@ -44,6 +44,9 @@
 #if ETH_ETHASHCUDA
 #include <libethash-cuda/CUDAMiner.h>
 #endif
+#if ETH_ETHASHCPU
+#include <libethash-cpu/CPUMiner.h>
+#endif
 #include <libpoolprotocols/PoolManager.h>
 #include <libpoolprotocols/stratum/EthStratumClient.h>
 #include <libpoolprotocols/getwork/EthGetworkClient.h>
@@ -472,7 +475,10 @@ public:
 		else if ( arg == "--cpu-start-nonce" && i + 1 < argc)
 			try
 			{
-				m_cpuStartNonce = stol(argv[++i]);
+                stringstream ss;
+                ss<<argv[++i];
+                ss>>m_cpuStartNonce;
+                cerr<<"StartNonce:"<<m_cpuStartNonce<<endl;
 			}
 			catch (...)
 			{
@@ -602,6 +608,7 @@ public:
 		}
 		else if (arg == "-C" || arg == "--cpu")
 		{
+            cerr<<"minerType = CPU" <<endl;
 			m_minerType = MinerType::CPU;
 		}
 		else if (arg == "-X" || arg == "--cuda-opencl")
@@ -675,8 +682,10 @@ public:
 
 	void execute()
 	{
+        cerr<<"Execute start"<<endl;
 		if (m_shouldListDevices)
 		{
+            cerr<<"LIst deivce"<<endl;
 #if ETH_ETHASHCL
 			if (m_minerType == MinerType::CL || m_minerType == MinerType::Mixed)
 				CLMiner::listDevices();

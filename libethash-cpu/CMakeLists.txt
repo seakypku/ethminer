@@ -7,7 +7,7 @@ set(FILES
 	CPUMiner.cpp
 )
 
-add_library(ethash ${FILES})
+add_library(ethash-cpu ${FILES})
 
 target_link_libraries(ethash-cpu ethcore ethash)
 target_include_directories(ethash-cpu PUBLIC ${CUDA_INCLUDE_DIRS})
